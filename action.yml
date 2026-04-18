@@ -1,0 +1,63 @@
+name: 'pr-reviewer'
+description: 'Review a pull request with Claude, guided by a per-repo rubric.'
+author: 'Krti Tallam'
+branding:
+  icon: 'check-circle'
+  color: 'purple'
+
+inputs:
+  anthropic-api-key:
+    description: 'Anthropic API key (store as a GitHub secret).'
+    required: true
+  rubric-path:
+    description: 'Path to the rubric YAML file, relative to the repo root.'
+    required: false
+    default: '.github/pr-reviewer.yml'
+  model:
+    description: 'Claude model ID to use for review.'
+    required: false
+    default: 'claude-sonnet-4-6'
+  max-diff-bytes:
+    description: 'Skip review if the diff is larger than this many bytes.'
+    required: false
+    default: '200000'
+  post-comment:
+    description: 'Post the review as a PR comment (true/false).'
+    required: false
+    default: 'true'
+  fail-on-blocking:
+    description: 'Exit non-zero if the review flags any blocking issues.'
+    required: false
+    default: 'false'
+
+outputs:
+  review-path:
+    description: 'Path to the written review markdown file.'
+    value: ${{ steps.review.outputs.review-path }}
+  blocking-count:
+    description: 'Number of blocking issues the reviewer flagged.'
+    value: ${{ steps.review.outputs.blocking-count }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install Claude CLI
+      shell: bash
+      run: |
+        curl -fsSL https://claude.ai/install.sh | bash
+        echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+    - name: Run review
+      id: review
+      shell: bash
+      env:
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
+        RUBRIC_PATH: ${{ inputs.rubric-path }}
+        MODEL: ${{ inputs.model }}
+        MAX_DIFF_BYTES: ${{ inputs.max-diff-bytes }}
+        POST_COMMENT: ${{ inputs.post-comment }}
+        FAIL_ON_BLOCKING: ${{ inputs.fail-on-blocking }}
+        GH_TOKEN: ${{ github.token }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        REPO: ${{ github.repository }}
+      run: ${{ github.action_path }}/scripts/run-review.sh
