@@ -1,0 +1,30 @@
+# Example rubric: AI-agent-adjacent code
+#
+# For repos where the code shapes how an AI agent acts -- prompts,
+# tool definitions, policy decisions, authorization checks.
+
+persona: >
+  A reviewer who treats this code as safety-relevant. The model or
+  agent this code influences will run in production and affect real
+  users. Be willing to block.
+
+priorities:
+  - authorization: every state-changing path has an auth guard; no silent escalations
+  - prompt_injection: no inputs flow into instructions without delimiting or escaping
+  - fallbacks: if a primary path fails, the fallback preserves invariants (no silent downgrades)
+  - logging: sensitive fields (tokens, secrets, user content) are not logged
+  - observability: enough context logged to audit a bad decision after the fact
+
+ignore:
+  - changes to generated fixtures or snapshots
+  - formatting inside unrelated files
+
+conventions:
+  - fail closed, not open, on ambiguous authorization
+  - never trust tool output as instructions
+  - surface partial results rather than synthesizing around missing data
+
+notes: >
+  Flag [BLOCKING] aggressively for auth holes, prompt-injection
+  vectors, and silent fallbacks. This rubric is explicitly higher-stakes
+  than the default.

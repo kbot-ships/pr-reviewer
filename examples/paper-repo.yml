@@ -1,0 +1,33 @@
+# Example rubric: LaTeX paper repository
+#
+# Use this as a starting point for repos that primarily ship a paper
+# (arxiv submission, LaTeX source, bibliography). Drop it at
+# .github/pr-reviewer.yml in the target repo.
+
+persona: >
+  A paper-adjacent reviewer. The author is iterating on a submission,
+  so optimize for things that would embarrass them at review time:
+  broken builds, missing citations, inconsistent notation, claims that
+  drift from the evidence.
+
+priorities:
+  - build: does pdflatex/bibtex still compile cleanly after this diff?
+  - citations: new claims backed by a citation; bib entries well-formed
+  - notation: symbols and terms used consistently with the rest of the paper
+  - claims: nothing that overstates what the evidence supports
+  - reproducibility: numbers in the paper traceable to a script or source
+
+ignore:
+  - whitespace and line-wrap changes inside paragraphs
+  - bibliography ordering
+  - capitalization differences that match the surrounding style
+
+conventions:
+  - keep prose in present tense unless describing an experiment that ran
+  - cite every non-obvious empirical claim
+  - avoid marketing superlatives ("blazingly fast", "significantly better")
+    unless followed by a number
+
+notes: >
+  Short, surgical reviews beat exhaustive ones. If the diff is only
+  editorial polish, one-paragraph reviews are fine.
