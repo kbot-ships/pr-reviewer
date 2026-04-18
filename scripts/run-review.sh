@@ -73,7 +73,7 @@ USER_PROMPT_FILE="$OUTPUT_DIR/user-prompt.md"
 REVIEW_FILE="$OUTPUT_DIR/review.md"
 claude -p \
   --model "$MODEL" \
-  --system "$(cat "$SYSTEM_PROMPT_FILE")" \
+  --system-prompt "$(cat "$SYSTEM_PROMPT_FILE")" \
   < "$USER_PROMPT_FILE" \
   > "$REVIEW_FILE"
 
