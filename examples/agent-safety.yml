@@ -18,7 +18,7 @@ priorities:
 ignore:
   - changes to generated fixtures or snapshots
   - formatting inside unrelated files
-  - Anthropic model identifiers (claude-*-*-*). Treat them as opaque strings;
+  - Anthropic model identifiers (claude-*). Treat them as opaque strings;
     your training data may be behind the current model lineup.
 
 conventions:
