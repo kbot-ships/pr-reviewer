@@ -94,3 +94,7 @@ See [`docs/rubric-schema.md`](./docs/rubric-schema.md) for the recommended field
 ## License
 
 [MIT](./LICENSE).
+
+## Status
+
+Active. Self-review workflow runs on every PR against this repo as a dogfood test.
