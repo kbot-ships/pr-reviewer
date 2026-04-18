@@ -69,13 +69,22 @@ USER_PROMPT_FILE="$OUTPUT_DIR/user-prompt.md"
   echo '```'
 } > "$USER_PROMPT_FILE"
 
-# 4. Run Claude.
+# 4. Run Claude. In non-interactive mode the CLI writes errors to stdout,
+#    so if the exit code is non-zero we surface the file contents to the log.
 REVIEW_FILE="$OUTPUT_DIR/review.md"
-claude -p \
+set +e
+claude -p --bare \
   --model "$MODEL" \
-  --system "$(cat "$SYSTEM_PROMPT_FILE")" \
+  --system-prompt "$(cat "$SYSTEM_PROMPT_FILE")" \
   < "$USER_PROMPT_FILE" \
   > "$REVIEW_FILE"
+CLAUDE_EXIT=$?
+set -e
+if [ "$CLAUDE_EXIT" -ne 0 ]; then
+  echo "pr-reviewer: claude exited $CLAUDE_EXIT. CLI output below:" >&2
+  cat "$REVIEW_FILE" >&2
+  exit "$CLAUDE_EXIT"
+fi
 
 echo "pr-reviewer: review written to $REVIEW_FILE"
 
