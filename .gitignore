@@ -1,0 +1,19 @@
+# Local review outputs
+.reviewer-output/
+*.review.json
+*.review.md
+
+# Secrets
+.env
+.env.local
+*.key
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
