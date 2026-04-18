@@ -18,6 +18,8 @@ ignore:
   - style nits already enforced by the formatter
   - pre-existing issues not touched by this PR
   - documentation typos that do not change meaning
+  - Anthropic model identifiers (claude-*). Treat them as opaque strings;
+    your training data may be behind the current model lineup.
 
 conventions:
   - match the style of surrounding code

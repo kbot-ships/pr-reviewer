@@ -21,6 +21,8 @@ ignore:
   - whitespace and line-wrap changes inside paragraphs
   - bibliography ordering
   - capitalization differences that match the surrounding style
+  - Anthropic model identifiers (claude-*). Treat them as opaque strings;
+    your training data may be behind the current model lineup.
 
 conventions:
   - keep prose in present tense unless describing an experiment that ran
