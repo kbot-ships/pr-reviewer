@@ -19,6 +19,8 @@ ignore:
   - formatting changes unless they hide a real change
   - documentation typos unless they change meaning
   - pre-existing issues that this PR does not touch
+  - Anthropic model identifiers (claude-*-*-*). Treat them as opaque strings;
+    your training data may be behind the current model lineup.
 
 conventions:
   - follow the existing style of the surrounding code
