@@ -14,6 +14,8 @@
 
 set -euo pipefail
 
+COMMENT_MARKER="<!-- pr-reviewer -->"
+
 require_var() {
   if [ -z "${!1:-}" ]; then
     echo "pr-reviewer: missing required env var: $1" >&2
@@ -89,14 +91,67 @@ fi
 echo "pr-reviewer: review written to $REVIEW_FILE"
 
 # 5. Count blocking issues. The system prompt instructs Claude to mark
-#    blocking issues with a literal "[BLOCKING]" tag on their own line.
-BLOCKING_COUNT=$(grep -c '^\[BLOCKING\]' "$REVIEW_FILE" || true)
+#    blocking issues with a literal "[BLOCKING]" tag. Accept either a
+#    standalone line or a normal markdown list item.
+BLOCKING_COUNT=$(grep -Ec '^[[:space:]]*(([-*][[:space:]]+)|([0-9]+[.)][[:space:]]+))?\[BLOCKING\]' "$REVIEW_FILE" || true)
 echo "pr-reviewer: blocking issues flagged: $BLOCKING_COUNT"
 
-# 6. Optionally post the review as a PR comment.
+write_comment_payload() {
+  local source_file="$1"
+  local output_file="$2"
+  python - "$source_file" "$output_file" <<'PY'
+import json
+import pathlib
+import sys
+
+body = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8")
+payload_path = pathlib.Path(sys.argv[2])
+payload_path.write_text(json.dumps({"body": body}), encoding="utf-8")
+PY
+}
+
+find_existing_comment_id() {
+  local marker="$1"
+  gh api "repos/$REPO/issues/$PR_NUMBER/comments?per_page=100" | python - "$marker" <<'PY'
+import json
+import sys
+
+marker = sys.argv[1]
+comments = json.load(sys.stdin)
+
+for comment in comments:
+    if comment.get("user", {}).get("login") != "github-actions[bot]":
+        continue
+    body = comment.get("body") or ""
+    if marker in body:
+        print(comment["id"])
+        break
+PY
+}
+
+# 6. Optionally post the review as a sticky PR comment.
 if [ "${POST_COMMENT:-true}" = "true" ]; then
-  gh pr comment "$PR_NUMBER" --repo "$REPO" --body-file "$REVIEW_FILE"
-  echo "pr-reviewer: posted review to PR #$PR_NUMBER"
+  COMMENT_FILE="$OUTPUT_DIR/comment.md"
+  COMMENT_PAYLOAD_FILE="$OUTPUT_DIR/comment.json"
+  {
+    echo "$COMMENT_MARKER"
+    echo ""
+    cat "$REVIEW_FILE"
+  } > "$COMMENT_FILE"
+
+  EXISTING_COMMENT_ID="$(find_existing_comment_id "$COMMENT_MARKER")"
+  if [ -n "$EXISTING_COMMENT_ID" ]; then
+    write_comment_payload "$COMMENT_FILE" "$COMMENT_PAYLOAD_FILE"
+    gh api \
+      --method PATCH \
+      "repos/$REPO/issues/comments/$EXISTING_COMMENT_ID" \
+      --input "$COMMENT_PAYLOAD_FILE" \
+      >/dev/null
+    echo "pr-reviewer: updated existing review comment on PR #$PR_NUMBER"
+  else
+    gh pr comment "$PR_NUMBER" --repo "$REPO" --body-file "$COMMENT_FILE"
+    echo "pr-reviewer: posted new review comment to PR #$PR_NUMBER"
+  fi
 fi
 
 echo "review-path=$REVIEW_FILE" >> "$GITHUB_OUTPUT"
