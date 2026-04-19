@@ -31,6 +31,7 @@ A reusable GitHub Action that reviews pull requests with Claude, guided by a per
 3. (Optional) Drop a rubric at `.github/pr-reviewer.yml`. Start by copying one of the [examples](./examples). Without a rubric, the built-in default is used.
 
 That's it. On every PR, Claude reads the diff, applies your rubric, and posts a review as a PR comment.
+On subsequent `synchronize` runs, the action updates its existing comment instead of adding a new one.
 
 ## What you get
 
@@ -53,7 +54,7 @@ A review comment shaped like this:
 <only if something is genuinely ambiguous>
 ```
 
-The `[BLOCKING]` tag is machine-scanned. Set `fail-on-blocking: true` to fail the job when any blocking issue is flagged.
+The `[BLOCKING]` tag is machine-scanned. Set `fail-on-blocking: true` to fail the job when any blocking issue is flagged. The action accepts either a standalone `[BLOCKING] ...` line or a normal markdown list item like `- [BLOCKING] ...`.
 
 ## Inputs
 
@@ -88,7 +89,8 @@ See [`docs/rubric-schema.md`](./docs/rubric-schema.md) for the recommended field
 - **One Claude call per PR.** No multi-pass, no per-file fan-out. Keeps cost predictable and reviews coherent.
 - **Rubric over tuning.** Repo-specific guidance lives in YAML, not in code. Easier to iterate, easier to copy between repos.
 - **Big diffs are skipped, not chunked.** A review of a 10k-line refactor is going to be superficial no matter how you slice it. The action logs a clear skip message so the author knows why.
-- **`[BLOCKING]` is a literal tag, not a structured parser.** Simple contract, one-line grep. Easy to audit, hard to break.
+- **The PR comment is sticky.** Re-runs update the existing bot comment instead of piling up duplicates on every push.
+- **`[BLOCKING]` is still a literal tag, but the parser tolerates normal markdown bullets.** Simple contract, low-friction formatting.
 - **Fail-open by default.** The action doesn't block merges unless you opt in with `fail-on-blocking: true`.
 
 ## License
