@@ -85,6 +85,19 @@ A rubric tells the reviewer what to weight on your repo. It's YAML that gets pas
 
 See [`docs/rubric-schema.md`](./docs/rubric-schema.md) for the recommended fields and what the rubric cannot override.
 
+## Local replay
+
+Use the replay harness to review a saved PR diff locally with the same rubric and
+prompt structure the action uses:
+
+```bash
+scripts/replay-review.sh --diff /path/to/pr.diff --assemble-only
+scripts/replay-review.sh --diff /path/to/pr.diff
+```
+
+`--assemble-only` writes the prompt bundle without calling Claude, which is the
+fastest way to inspect exactly what the action would send.
+
 ## Design notes
 
 - **One Claude call per PR.** No multi-pass, no per-file fan-out. Keeps cost predictable and reviews coherent.
