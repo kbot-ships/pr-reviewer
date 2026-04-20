@@ -92,7 +92,8 @@ echo "pr-reviewer: review written to $REVIEW_FILE"
 
 # 5. Count blocking issues. The system prompt instructs Claude to mark
 #    blocking issues with a literal "[BLOCKING]" tag on their own line.
-BLOCKING_COUNT=$(grep -c '^\[BLOCKING\]' "$REVIEW_FILE" || true)
+REVIEW_CHECK_JSON="$("$ACTION_DIR/scripts/check-review-output.sh" --strict "$REVIEW_FILE")"
+BLOCKING_COUNT=$(python3 -c 'import json,sys; print(json.load(sys.stdin)["blocking_count"])' <<<"$REVIEW_CHECK_JSON")
 echo "pr-reviewer: blocking issues flagged: $BLOCKING_COUNT"
 
 # 6. Optionally post the review as a PR comment.

@@ -75,6 +75,10 @@ The `[BLOCKING]` tag is machine-scanned. Set `fail-on-blocking: true` to fail th
 | `review-path` | Path to the generated review markdown (inside the runner). |
 | `blocking-count` | Number of `[BLOCKING]` issues flagged. |
 
+The repo also ships `scripts/check-review-output.sh`, which validates that a
+review contains the required sections and emits a small JSON summary with the
+blocking count. The action now uses that contract check before posting.
+
 ## Rubrics
 
 A rubric tells the reviewer what to weight on your repo. It's YAML that gets passed verbatim as part of the user message. Three starting points:
