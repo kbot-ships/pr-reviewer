@@ -38,6 +38,8 @@ else
   echo "pr-reviewer: no rubric at $RUBRIC_PATH, falling back to default"
 fi
 
+"$ACTION_DIR/scripts/validate-rubric.sh" "$RUBRIC_FILE"
+
 # 2. Pull the PR diff.
 DIFF_FILE="$OUTPUT_DIR/pr.diff"
 gh pr diff "$PR_NUMBER" --repo "$REPO" > "$DIFF_FILE"

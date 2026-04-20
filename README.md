@@ -32,6 +32,8 @@ A reusable GitHub Action that reviews pull requests with Claude, guided by a per
 
 That's it. On every PR, Claude reads the diff, applies your rubric, and posts a review as a PR comment.
 
+If the rubric file is malformed or uses the wrong top-level field types, the action now fails fast with an actionable validation error before the Claude call.
+
 ## What you get
 
 A review comment shaped like this:
