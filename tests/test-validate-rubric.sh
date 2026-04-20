@@ -34,7 +34,9 @@ expect_failure() {
 }
 
 expect_success "$REPO_ROOT/examples/code-repo.yml"
+expect_success "$REPO_ROOT/examples/high-risk-code-repo.yml"
 expect_success "$REPO_ROOT/examples/paper-repo.yml"
+expect_success "$REPO_ROOT/examples/paper-submission.yml"
 expect_success "$REPO_ROOT/examples/agent-safety.yml"
 expect_failure "$SCRIPT_DIR/fixtures/invalid-rubric-top-level.yml" "top level"
 expect_failure "$SCRIPT_DIR/fixtures/invalid-rubric-types.yml" "persona must be a String"

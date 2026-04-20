@@ -85,6 +85,8 @@ A rubric tells the reviewer what to weight on your repo. It's YAML that gets pas
 
 - [`examples/paper-repo.yml`](./examples/paper-repo.yml) -- for LaTeX paper repositories.
 - [`examples/code-repo.yml`](./examples/code-repo.yml) -- balanced defaults for a software project.
+- [`examples/high-risk-code-repo.yml`](./examples/high-risk-code-repo.yml) -- stricter defaults for auth, billing, infra, and other high-consequence services.
+- [`examples/paper-submission.yml`](./examples/paper-submission.yml) -- tighter review posture for near-submission paper passes.
 - [`examples/agent-safety.yml`](./examples/agent-safety.yml) -- higher-stakes rubric for AI-agent-adjacent code.
 
 See [`docs/rubric-schema.md`](./docs/rubric-schema.md) for the recommended fields and what the rubric cannot override.

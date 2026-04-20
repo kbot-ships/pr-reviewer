@@ -15,6 +15,14 @@ call:
 The fields below are conventions that play well with the built-in system
 prompt.
 
+Maintained examples live in [`examples/`](../examples):
+
+- `code-repo.yml` for balanced software defaults
+- `high-risk-code-repo.yml` for stricter production/control-plane paths
+- `paper-repo.yml` for general paper repos
+- `paper-submission.yml` for near-submission paper review
+- `agent-safety.yml` for AI-agent-adjacent safety-sensitive code
+
 ## Recommended fields
 
 ### `persona` (string, optional)
