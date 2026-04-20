@@ -66,7 +66,7 @@ The `[BLOCKING]` tag is machine-scanned. Set `fail-on-blocking: true` to fail th
 | `model` | `claude-sonnet-4-6` | Claude model ID. Override to `claude-opus-4-7` for deeper review or `claude-haiku-4-5-20251001` for cost. |
 | `max-diff-bytes` | `200000` | Skip review if the diff is larger than this. Large diffs get diffuse reviews; better to skip than waste tokens. |
 | `post-comment` | `true` | Post the review as a PR comment. Set to `false` to just compute the review (useful for local testing or custom handling). |
-| `fail-on-blocking` | `false` | Fail the job if Claude flags any `[BLOCKING]` issues. |
+| `fail-on-blocking` | `false` | Fail the job if Claude flags any `[BLOCKING]` issues. See [docs/fail-on-blocking.md](./docs/fail-on-blocking.md) for rollout patterns and caveats. |
 
 ## Outputs
 
