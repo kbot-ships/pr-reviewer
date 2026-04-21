@@ -76,8 +76,9 @@ The `[BLOCKING]` tag is machine-scanned. Set `fail-on-blocking: true` to fail th
 | `blocking-count` | Number of `[BLOCKING]` issues flagged. |
 
 The repo also ships `scripts/check-review-output.sh`, which validates that a
-review contains the required sections and emits a small JSON summary with the
-blocking count. The action now uses that contract check before posting.
+review contains the required sections, emits a small JSON severity summary,
+and rejects unsupported severity tags in strict mode. The action now uses that
+contract check before posting.
 
 ## Rubrics
 
