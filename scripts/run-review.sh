@@ -147,6 +147,11 @@ is_retryable_claude_failure() {
   grep -Eiq '(429|529|rate limit|timeout|timed out|temporarily unavailable|overloaded|try again|connection reset|network error|service unavailable)' "$source_file"
 }
 
+is_nonblocking_primary_failure() {
+  local source_file="$1"
+  grep -Eiq '(credit balance is too low|insufficient credits|anthropic_api_key is not set|authentication failed|invalid api key|unauthorized)' "$source_file"
+}
+
 run_claude_attempt() {
   local attempt="$1"
   local output_file="$OUTPUT_DIR/review-claude-attempt-$attempt.md"
@@ -394,6 +399,12 @@ if ! run_claude_with_retries; then
       echo "pr-reviewer: both primary and fallback review engines failed" >&2
       exit 1
     }
+  elif [ -s "$LAST_PRIMARY_OUTPUT" ] && is_nonblocking_primary_failure "$LAST_PRIMARY_OUTPUT"; then
+    echo "pr-reviewer: primary review engine unavailable and no fallback engine is configured; skipping review without failing the job" >&2
+    echo "review-path=" >> "$GITHUB_OUTPUT"
+    echo "blocking-count=0" >> "$GITHUB_OUTPUT"
+    echo "engine-used=skipped" >> "$GITHUB_OUTPUT"
+    exit 0
   else
     echo "pr-reviewer: Claude failed after retries and no fallback engine is configured" >&2
     exit "${LAST_PRIMARY_EXIT:-1}"
