@@ -5,9 +5,23 @@ given repo. The action looks for it at `.github/pr-reviewer.yml` by
 default; override via the `rubric-path` input.
 
 The entire rubric is passed to the reviewer as markdown inside the user
-message. There is no strict schema validation -- the reviewer reads it
-as guidance. The fields below are conventions that play well with the
-built-in system prompt.
+message. The action now performs lightweight validation before the Claude
+call:
+
+- the rubric must be a top-level YAML mapping
+- known fields must have the expected types
+- unknown top-level keys are allowed, but reported as warnings
+
+The fields below are conventions that play well with the built-in system
+prompt.
+
+Maintained examples live in [`examples/`](../examples):
+
+- `code-repo.yml` for balanced software defaults
+- `high-risk-code-repo.yml` for stricter production/control-plane paths
+- `paper-repo.yml` for general paper repos
+- `paper-submission.yml` for near-submission paper review
+- `agent-safety.yml` for AI-agent-adjacent safety-sensitive code
 
 ## Recommended fields
 
@@ -24,7 +38,9 @@ persona: >
 ### `priorities` (list, recommended)
 
 Ordered list of what to weight most heavily. The reviewer will address
-these in order of importance. Example:
+these in order of importance. Each item may be either a plain string or
+a single-entry mapping, which keeps the label and elaboration together.
+Example:
 
 ```yaml
 priorities:

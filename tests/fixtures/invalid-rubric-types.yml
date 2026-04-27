@@ -1,0 +1,5 @@
+persona:
+  not: a string
+priorities:
+  - correctness
+  - 123

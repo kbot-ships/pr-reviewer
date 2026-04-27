@@ -346,6 +346,8 @@ else
   echo "pr-reviewer: no rubric at $RUBRIC_PATH, falling back to default"
 fi
 
+"$ACTION_DIR/scripts/validate-rubric.sh" "$RUBRIC_FILE"
+
 # 2. Pull the PR diff.
 DIFF_FILE="$OUTPUT_DIR/pr.diff"
 gh pr diff "$PR_NUMBER" --repo "$REPO" > "$DIFF_FILE"
@@ -400,10 +402,9 @@ fi
 
 echo "pr-reviewer: review written to $REVIEW_FILE"
 
-# 5. Count blocking issues. The system prompt instructs Claude to mark
-#    blocking issues with a literal "[BLOCKING]" tag. Accept either a
-#    standalone line or a normal markdown list item.
-BLOCKING_COUNT=$(grep -Ec '^[[:space:]]*(([-*][[:space:]]+)|([0-9]+[.)][[:space:]]+))?\[BLOCKING\]' "$REVIEW_FILE" || true)
+# 5. Count blocking issues and validate the output contract.
+REVIEW_CHECK_JSON="$("$ACTION_DIR/scripts/check-review-output.sh" --strict "$REVIEW_FILE")"
+BLOCKING_COUNT=$(python3 -c 'import json,sys; print(json.load(sys.stdin)["blocking_count"])' <<<"$REVIEW_CHECK_JSON")
 echo "pr-reviewer: blocking issues flagged: $BLOCKING_COUNT"
 
 # 6. Optionally publish the review back to GitHub.

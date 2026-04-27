@@ -33,6 +33,8 @@ A reusable GitHub Action that reviews pull requests with Claude, guided by a per
 That's it. On every PR, Claude reads the diff, applies your rubric, and publishes the result back to GitHub.
 By default it posts a sticky PR comment; you can also publish as a formal PR review event.
 
+If the rubric file is malformed or uses the wrong top-level field types, the action now fails fast with an actionable validation error before the Claude call.
+
 ## What you get
 
 A review comment shaped like this:
@@ -80,17 +82,22 @@ If `sticky-update: true`, the action will update an existing bot-authored commen
 | `rubric-path` | `.github/pr-reviewer.yml` | Path to the rubric YAML, relative to repo root. Falls back to a built-in default if the file is missing. |
 | `model` | `claude-sonnet-4-6` | Claude model ID. Override to `claude-opus-4-7` for deeper review or `claude-haiku-4-5-20251001` for cost. |
 | `max-diff-bytes` | `200000` | Skip review if the diff is larger than this. Large diffs get diffuse reviews; better to skip than waste tokens. |
+<<<<<<< HEAD
 | `post-comment` | `true` | Publish the review back to GitHub. Set to `false` to just compute the review. |
 | `submission-mode` | `comment` | `comment` or `review`. Controls whether the result is posted as an issue comment or a PR review event. |
 | `review-event` | `auto` | Used when `submission-mode=review`. `auto`, `comment`, `approve`, or `request_changes`. |
 | `sticky-update` | `true` | Update the bot's existing comment/review when possible instead of posting duplicates. |
-| `fail-on-blocking` | `false` | Fail the job if Claude flags any `[BLOCKING]` issues. |
+| `fail-on-blocking` | `false` | Fail the job if Claude flags any `[BLOCKING]` issues. See [docs/fail-on-blocking.md](./docs/fail-on-blocking.md) for rollout patterns and caveats. |
 | `max-retries` | `2` | Retry attempts for transient Claude CLI failures. |
 | `retry-delay-seconds` | `5` | Base delay between Claude retries; later retries back off exponentially. |
 | `review-timeout-seconds` | `900` | Best-effort timeout for one Claude attempt when `timeout(1)` is available on the runner. |
 | `fallback-command` | empty | Optional shell command to run if Claude fails after retries. Receives `SYSTEM_PROMPT_FILE`, `USER_PROMPT_FILE`, `REVIEW_FILE`, and `FALLBACK_MODEL`. |
 | `fallback-name` | `fallback` | Name used in logs and outputs for the fallback engine. |
 | `fallback-model` | empty | Optional model identifier exposed to the fallback command as `FALLBACK_MODEL`. |
+=======
+| `post-comment` | `true` | Post the review as a PR comment. Set to `false` to just compute the review (useful for local testing or custom handling). |
+| `fail-on-blocking` | `false` | Fail the job if Claude flags any `[BLOCKING]` issues. See [docs/fail-on-blocking.md](./docs/fail-on-blocking.md) for rollout patterns and caveats. |
+>>>>>>> origin/main
 
 ## Outputs
 
@@ -130,15 +137,35 @@ Minimal example:
 
 The action does not install the fallback engine for you. Keep the fallback command explicit so the repo owner controls the trust boundary and runtime dependencies.
 
+The repo also ships `scripts/check-review-output.sh`, which validates that a
+review contains the required sections, emits a small JSON severity summary,
+and rejects unsupported severity tags in strict mode. The action now uses that
+contract check before posting.
+
 ## Rubrics
 
 A rubric tells the reviewer what to weight on your repo. It's YAML that gets passed verbatim as part of the user message. Three starting points:
 
 - [`examples/paper-repo.yml`](./examples/paper-repo.yml) -- for LaTeX paper repositories.
 - [`examples/code-repo.yml`](./examples/code-repo.yml) -- balanced defaults for a software project.
+- [`examples/high-risk-code-repo.yml`](./examples/high-risk-code-repo.yml) -- stricter defaults for auth, billing, infra, and other high-consequence services.
+- [`examples/paper-submission.yml`](./examples/paper-submission.yml) -- tighter review posture for near-submission paper passes.
 - [`examples/agent-safety.yml`](./examples/agent-safety.yml) -- higher-stakes rubric for AI-agent-adjacent code.
 
 See [`docs/rubric-schema.md`](./docs/rubric-schema.md) for the recommended fields and what the rubric cannot override.
+
+## Local replay
+
+Use the replay harness to review a saved PR diff locally with the same rubric and
+prompt structure the action uses:
+
+```bash
+scripts/replay-review.sh --diff /path/to/pr.diff --assemble-only
+scripts/replay-review.sh --diff /path/to/pr.diff
+```
+
+`--assemble-only` writes the prompt bundle without calling Claude, which is the
+fastest way to inspect exactly what the action would send.
 
 ## Design notes
 
