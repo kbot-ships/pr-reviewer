@@ -8,7 +8,7 @@ branding:
 inputs:
   anthropic-api-key:
     description: 'Anthropic API key (store as a GitHub secret).'
-    required: true
+    required: false
   rubric-path:
     description: 'Path to the rubric YAML file, relative to the repo root.'
     required: false
@@ -22,13 +22,49 @@ inputs:
     required: false
     default: '200000'
   post-comment:
-    description: 'Post the review as a PR comment (true/false).'
+    description: 'Publish the review back to GitHub (true/false).'
+    required: false
+    default: 'true'
+  submission-mode:
+    description: 'How to publish the review: comment or review.'
+    required: false
+    default: 'comment'
+  review-event:
+    description: 'Review event when submission-mode=review: auto, comment, approve, or request_changes.'
+    required: false
+    default: 'auto'
+  sticky-update:
+    description: 'Update an existing bot-authored comment/review when possible instead of posting duplicates.'
     required: false
     default: 'true'
   fail-on-blocking:
     description: 'Exit non-zero if the review flags any blocking issues.'
     required: false
     default: 'false'
+  max-retries:
+    description: 'Number of retry attempts for transient Claude CLI failures.'
+    required: false
+    default: '2'
+  retry-delay-seconds:
+    description: 'Base delay between Claude retry attempts.'
+    required: false
+    default: '5'
+  review-timeout-seconds:
+    description: 'Best-effort timeout for one Claude review attempt.'
+    required: false
+    default: '900'
+  fallback-command:
+    description: 'Optional shell command to run if Claude fails after retries. The command receives SYSTEM_PROMPT_FILE, USER_PROMPT_FILE, REVIEW_FILE, and FALLBACK_MODEL env vars.'
+    required: false
+    default: ''
+  fallback-name:
+    description: 'Display name for the fallback engine in logs and outputs.'
+    required: false
+    default: 'fallback'
+  fallback-model:
+    description: 'Optional model identifier exposed to the fallback command as FALLBACK_MODEL.'
+    required: false
+    default: ''
 
 outputs:
   review-path:
@@ -37,6 +73,9 @@ outputs:
   blocking-count:
     description: 'Number of blocking issues the reviewer flagged.'
     value: ${{ steps.review.outputs.blocking-count }}
+  engine-used:
+    description: 'Which engine produced the final review.'
+    value: ${{ steps.review.outputs.engine-used }}
 
 runs:
   using: 'composite'
@@ -56,7 +95,16 @@ runs:
         MODEL: ${{ inputs.model }}
         MAX_DIFF_BYTES: ${{ inputs.max-diff-bytes }}
         POST_COMMENT: ${{ inputs.post-comment }}
+        SUBMISSION_MODE: ${{ inputs.submission-mode }}
+        REVIEW_EVENT: ${{ inputs.review-event }}
+        STICKY_UPDATE: ${{ inputs.sticky-update }}
         FAIL_ON_BLOCKING: ${{ inputs.fail-on-blocking }}
+        MAX_RETRIES: ${{ inputs.max-retries }}
+        RETRY_DELAY_SECONDS: ${{ inputs.retry-delay-seconds }}
+        REVIEW_TIMEOUT_SECONDS: ${{ inputs.review-timeout-seconds }}
+        FALLBACK_COMMAND: ${{ inputs.fallback-command }}
+        FALLBACK_NAME: ${{ inputs.fallback-name }}
+        FALLBACK_MODEL: ${{ inputs.fallback-model }}
         GH_TOKEN: ${{ github.token }}
         PR_NUMBER: ${{ github.event.pull_request.number }}
         REPO: ${{ github.repository }}
